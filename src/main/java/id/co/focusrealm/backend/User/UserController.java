@@ -16,6 +16,7 @@ public class UserController {
     @PostMapping("/insert_user")
     public @ResponseBody UserResponse insertUserResponse(@RequestBody UserModel user) {
         try {
+            log.info("Inserting User!");
             return userService.insertUser(user);
         } catch (Exception e) {
             log.error("Error At UserController InsertUserResponse");
@@ -26,6 +27,7 @@ public class UserController {
     @PostMapping("/fetch_user")
     public @ResponseBody UserResponse fetchUserResponse(@RequestBody UserModel user) {
         try {
+            log.info("Fetching User Data!");
             return userService.fetchUser(user);
         } catch (Exception e) {
             log.error("Error At UserController FetchUserResponse");
