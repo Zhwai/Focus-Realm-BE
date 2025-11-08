@@ -31,6 +31,9 @@ public class LoginPageService {
     @Autowired
     private AnalyticsService  analyticsService;
 
+    @Autowired
+    private Utility utility;
+
     private String defaultMusic = "M001";
     private String defaultAmbient = "A001";
     private String defaultCharacter = "CH001";
@@ -64,6 +67,8 @@ public class LoginPageService {
                 user.setPity(defaultPity);
                 user.setCoins(defaultCoins);
 
+                String hashedPassword = utility.passwordEncoder().encode(user.getPassword());
+                user.setPassword(hashedPassword);
                 loginPageRepository.insertUser(user);
 
                 // Setting User Character Data
@@ -126,28 +131,38 @@ public class LoginPageService {
         return newUserId;
     }
 
+    public boolean checkPasswordCorrect(String userName, String password){
+
+        try {
+            String hashedPassword = loginPageRepository.getUserHashedPassword(userName);
+            return utility.passwordEncoder().matches(password, hashedPassword);
+        } catch (Exception e) {
+            log.error("Error at UserService.checkPasswordCorrect");
+            throw new RuntimeException(e);
+        }
+
+    }
+
+
     public LoginPageResponse fetchUser(LoginPageModel user){
           LoginPageResponse loginPageResponse = new LoginPageResponse();
           try {
 
-              int getFetchUserCode = loginPageRepository.fetchUser(user);
-
-              if(getFetchUserCode == 1){
-
+              if(loginPageRepository.checkHasValue() == false){
                   loginPageResponse.setErrorCode("204");
                   loginPageResponse.setErrorMessage("User Not Found");
-
-              } else if (getFetchUserCode == 2){
-
+              } else if (loginPageRepository.checkUserNameExists(user.getUsername()) == false){
+                  loginPageResponse.setErrorCode("204");
+                  loginPageResponse.setErrorMessage("User Not Found");
+              } else if (checkPasswordCorrect(user.getUsername(), user.getPassword()) == false){
                   loginPageResponse.setErrorCode("204");
                   loginPageResponse.setErrorMessage("Wrong Password");
-
-              } else if  (getFetchUserCode == 3){
+              } else {
+                  loginPageRepository.fetchUser(user);
 
                   loginPageResponse.setUser(user);
                   loginPageResponse.setErrorCode("200");
                   loginPageResponse.setErrorMessage("Success");
-
               }
 
           } catch (Exception e) {

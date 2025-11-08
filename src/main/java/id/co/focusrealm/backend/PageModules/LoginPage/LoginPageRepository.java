@@ -99,44 +99,29 @@ public class LoginPageRepository {
         return check;
     }
 
-    public int fetchUser(LoginPageModel user){
-        int notFoundCode = 1;
-        int wrongPasswordCode = 2;
-        int SuccessFetchCode = 3;
-
+    public void fetchUser(LoginPageModel user) {
         try {
 
-            if(checkHasValue() == false){
-                return notFoundCode;
-            } else if (checkUserNameExists(user.getUsername()) == false){
-                return notFoundCode;
-            } else if (checkPasswordCorrect(user.getUsername(), user.getPassword()) == false){
-                return wrongPasswordCode;
-            } else {
-                String fetchUserSql = """
-                        SELECT * FROM "User" WHERE username = ? AND  password = ?
-                        """;
+            String fetchUserSql = """
+                    SELECT * FROM "User" WHERE username = ?
+                    """;
 
-                LoginPageModel result = jdbcTemplate.queryForObject(fetchUserSql, userRowMapper, user.getUsername(), user.getPassword());
+            LoginPageModel result = jdbcTemplate.queryForObject(fetchUserSql, userRowMapper, user.getUsername());
 
-                user.setUser_Id(result.getUser_Id());
-                user.setUsername(result.getUsername());
-                user.setPassword(result.getPassword());
-                user.setEmail(result.getEmail());
-                user.setAmbient_Id(result.getAmbient_Id());
-                user.setMusic_Id(result.getMusic_Id());
-                user.setPassword(result.getPassword());
-                user.setCoins(result.getCoins());
-                user.setPity(result.getPity());
-                user.setCreated_at(result.getCreated_at());
-            }
+            user.setUser_Id(result.getUser_Id());
+            user.setUsername(result.getUsername());
+            user.setPassword(result.getPassword());
+            user.setEmail(result.getEmail());
+            user.setAmbient_Id(result.getAmbient_Id());
+            user.setMusic_Id(result.getMusic_Id());
+            user.setCoins(result.getCoins());
+            user.setPity(result.getPity());
+            user.setCreated_at(result.getCreated_at());
 
         } catch (Exception e) {
             log.error("Error At UserRepository.fetchUser");
             throw new RuntimeException(e);
         }
-
-        return SuccessFetchCode;
     }
 
     public boolean checkUserNameExists(String userName){
@@ -162,28 +147,20 @@ public class LoginPageRepository {
         return check;
     }
 
-    public boolean checkPasswordCorrect(String userName, String password){
-        boolean check = false;
+    public String getUserHashedPassword(String userName){
         try {
 
-            String  checkPasswordCorrectSql = """
-                SELECT COUNT (username) FROM "User" WHERE username = ? AND  password = ?
+            String getUserHashedPasswordSql = """
+                SELECT password FROM "User" WHERE username = ?
             """;
 
-            int hasValue =  jdbcTemplate.queryForObject(checkPasswordCorrectSql, Integer.class, userName, password);
-
-            if(hasValue > 0){
-                check = true;
-            } else  {
-                check = false;
-            }
+            String hashedPassword =  jdbcTemplate.queryForObject(getUserHashedPasswordSql, String.class, userName);
+            return hashedPassword;
 
         } catch (Exception e) {
             log.error("Error At UserRepository.checkPasswordCorrect");
             throw new RuntimeException(e);
         }
-
-        return check;
     }
 
     public boolean checkEmailTaken(String email){
