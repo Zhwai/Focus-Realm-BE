@@ -140,9 +140,7 @@ public class LoginPageService {
             log.error("Error at UserService.checkPasswordCorrect");
             throw new RuntimeException(e);
         }
-
     }
-
 
     public LoginPageResponse fetchUser(LoginPageModel user){
           LoginPageResponse loginPageResponse = new LoginPageResponse();

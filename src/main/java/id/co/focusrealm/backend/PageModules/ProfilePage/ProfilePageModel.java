@@ -12,7 +12,8 @@ public class ProfilePageModel {
     private String user_id;
     private String username;
     private String email;
-    private String password;
+    private String old_password;
+    private String new_password;
 
     private String profile_picture_file_name;
 

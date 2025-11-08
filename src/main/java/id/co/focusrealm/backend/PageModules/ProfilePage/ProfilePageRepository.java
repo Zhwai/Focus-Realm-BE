@@ -64,7 +64,7 @@ public class ProfilePageRepository {
                     "SET password = ?\n" +
                     "WHERE user_id = ?";
 
-            jdbcTemplate.update(updateUserPasswordSql, profilePageModel.getPassword(), profilePageModel.getUser_id());
+            jdbcTemplate.update(updateUserPasswordSql, profilePageModel.getNew_password(), profilePageModel.getUser_id());
 
         } catch (Exception e) {
             log.error("Error at ProfilePageRepository, updateUserPassword");

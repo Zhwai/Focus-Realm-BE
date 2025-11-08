@@ -1,8 +1,10 @@
 package id.co.focusrealm.backend.PageModules.ProfilePage;
 
+import id.co.focusrealm.backend.CommonFunctions.Utility;
 import id.co.focusrealm.backend.DataBaseModules.Analytics.AnalyticsRepository;
 import id.co.focusrealm.backend.DataBaseModules.FocusSession.FocusSessionRepository;
 import id.co.focusrealm.backend.PageModules.LoginPage.LoginPageRepository;
+import id.co.focusrealm.backend.PageModules.LoginPage.LoginPageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,12 @@ public class ProfilePageService {
 
     @Autowired
     private LoginPageRepository loginPageRepository;
+
+    @Autowired
+    private LoginPageService loginPageService;
+
+    @Autowired
+    private Utility utility;
 
     public ProfilePageResponse fetchProfilePageData(ProfilePageModel profilePageModel){
 
@@ -87,12 +95,23 @@ public class ProfilePageService {
 
         try {
 
-            profilePageRepository.updateUserPassword(profilePageModel);
-            fetchProfilePageData(profilePageModel);
+            if(loginPageRepository.checkUserNameExists(profilePageModel.getUsername()) == false){
+                profilePageResponse.setErrorCode("204");
+                profilePageResponse.setErrorMessage("User Not Found");
+            } else if (loginPageService.checkPasswordCorrect(profilePageModel.getUsername(), profilePageModel.getOld_password()) == false){
+                profilePageResponse.setErrorCode("204");
+                profilePageResponse.setErrorMessage("Wrong Password");
+            } else {
+                String hashedPassword = utility.passwordEncoder().encode(profilePageModel.getNew_password());
+                profilePageModel.setNew_password(hashedPassword);
 
-            profilePageResponse.setErrorCode("200");
-            profilePageResponse.setErrorMessage("SUCCESS");
-            profilePageResponse.setProfilePageModel(profilePageModel);
+                profilePageRepository.updateUserPassword(profilePageModel);
+                fetchProfilePageData(profilePageModel);
+
+                profilePageResponse.setErrorCode("200");
+                profilePageResponse.setErrorMessage("SUCCESS");
+                profilePageResponse.setProfilePageModel(profilePageModel);
+            }
 
             return profilePageResponse;
 
